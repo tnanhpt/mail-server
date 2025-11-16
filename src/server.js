@@ -9,6 +9,7 @@ import { createSMTPServer } from "./smtp/server.js";
 
 import mailRoutes from "./api/routes/mail.js";
 import { apiKeyAuth } from "./api/middlewares/auth.js";
+import { connectRabbitMQ } from "./smtp/rabbitmq.js";
 
 const app = express();
 
