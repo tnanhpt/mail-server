@@ -22,10 +22,10 @@ app.use("/api/mails", apiKeyAuth, mailRoutes);
 
 async function start() {
   await connectDB();
+  await connectRabbitMQ();
   await createSMTPServer();
   app.listen(config.port, config.host, () => {
     console.log(`API running on http://${config.host}:${config.port}`);
   });
 }
-
 start().catch(console.error);
