@@ -20,7 +20,7 @@ const emailSchema = new mongoose.Schema({
   to: [String],
   original_to: [String],
   cc: [String],
-  headers: Object,
+  // headers: Object,
   text: String,
   html: String,
   attachments: [Object],
