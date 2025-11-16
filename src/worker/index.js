@@ -35,7 +35,6 @@ async function processEmail({ fileId, raw, envelope }) {
   };
 
   await Email.create(doc);
-  await fs.unlink(filePath).catch(() => {});
 }
 
 async function start() {
