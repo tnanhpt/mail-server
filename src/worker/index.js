@@ -7,8 +7,9 @@ import { config } from "../config/index.js";
 import { getVietnamTime } from "../smtp/rabbitmq.js";
 
 async function processEmail({ fileId, filePath, envelope }) {
-  const raw = await fs.readFile(filePath);
-  const parsed = await simpleParser(raw);
+  // const raw = await fs.readFile(filePath);
+  const emailBuffer = Buffer.from(raw, "base64");
+  const parsed = await simpleParser(emailBuffer);
 
   const now = new Date();
   const doc = {
@@ -30,6 +31,7 @@ async function processEmail({ fileId, filePath, envelope }) {
     expires_at: new Date(now.getTime() + config.ttlMinutes * 60 * 1000),
     file_id: fileId,
     read: false,
+    raw_size: emailBuffer.length,
   };
 
   await Email.create(doc);

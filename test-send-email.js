@@ -9,7 +9,7 @@ const __dirname = dirname(__filename);
 
 // Cấu hình SMTP giả (chạy local)
 const smtp = new SMTPClient({
-  host: "localhost",
+  host: "192.168.100.241",
   port: 25, // port SMTP của bạn
 });
 

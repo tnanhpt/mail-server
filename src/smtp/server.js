@@ -16,9 +16,8 @@ export async function createSMTPServer() {
   const server = new SMTPServer({
     logger: false,
     disabledCommands: ["AUTH", "STARTTLS"],
-    size: 50 * 1024 * 1024, // 50MB max
+    size: 1 * 1024 * 1024, // 1mb max
     maxClients: 200,
-
     onRcptTo(address, session, cb) {
       const rawAddr = String(address.address || "").toLowerCase();
       const domain = rawAddr.split("@").pop();
@@ -34,47 +33,44 @@ export async function createSMTPServer() {
     },
 
     onData(stream, session, cb) {
-      const fileId = randomUUID();
-      const filePath = `${TMP_DIR}/${fileId}.eml`;
-      const writeStream = fs.createWriteStream(filePath);
-
+      const chunks = [];
       let size = 0;
       const maxSize = 50 * 1024 * 1024;
 
       stream.on("data", (chunk) => {
         size += chunk.length;
         if (size > maxSize) {
-          writeStream.destroy();
-          fs.unlink(filePath, () => {});
           return cb(new Error("552 Too large"));
         }
+        chunks.push(chunk);
       });
 
-      stream.pipe(writeStream);
-      console.log("có email");
-
-      writeStream.on("finish", async () => {
+      stream.on("end", async () => {
         try {
+          const raw = Buffer.concat(chunks);
+          const messageId = randomUUID();
+
           await publishEmail({
-            fileId,
-            filePath,
+            messageId,
+            raw: raw.toString("base64"), // Gửi nội dung
             envelope: {
               mailFrom: session.envelope.mailFrom?.address,
               rcptTo: session.envelope.rcptTo.map((r) => r.address),
-              originalRcptTos: session.originalRcptTos,
+              originalRcptTos: session.originalRcptTos || [],
             },
           });
+
+          console.log(
+            `[SMTP] Nhận email ${messageId} (${raw.length} bytes) → RabbitMQ`
+          );
           cb();
         } catch (err) {
-          fs.unlink(filePath, () => {});
+          console.error("[SMTP] Lỗi đẩy RabbitMQ:", err);
           cb(err);
         }
       });
 
-      writeStream.on("error", (err) => {
-        fs.unlink(filePath, () => {});
-        cb(err);
-      });
+      stream.on("error", cb);
     },
   });
 

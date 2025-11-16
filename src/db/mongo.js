@@ -1,7 +1,6 @@
 // src/db/mongo.js
 import mongoose from "mongoose";
 import { config } from "../config/index.js";
-console.log("🚀 ~ config:", config)
 
 let isConnected = false;
 
@@ -29,6 +28,7 @@ const emailSchema = new mongoose.Schema({
   expires_at: { type: Date, required: true },
   file_id: String,
   read: { type: Boolean, default: false },
+  raw_size: Number,
 });
 
 emailSchema.index({ expires_at: 1 }, { expireAfterSeconds: 0 });
