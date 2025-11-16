@@ -35,6 +35,37 @@ router.get("/:id", async (req, res) => {
   res.json(email);
 });
 
+// === GET: Email theo địa chỉ email (MỚI) ===
+router.get("/by-email/:address", async (req, res) => {
+  const { address } = req.params;
+  if (!address || !address.includes("@")) {
+    return res.status(400).json({ error: "Invalid email address" });
+  }
+
+  const normalized = address.toLowerCase().trim();
+
+  try {
+    const emails = await Email.find({
+      $or: [
+        { to: normalized },
+        { cc: normalized },
+      ],
+    })
+      .sort({ received_at: -1 })
+      .select("-raw -__v")
+      .limit(50);
+
+    res.json({
+      query: normalized,
+      count: emails.length,
+      emails,
+    });
+  } catch (err) {
+    console.error("[API] Lỗi tìm email theo address:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.delete("/:id", async (req, res) => {
   await Email.deleteOne({ _id: req.params.id });
   res.json({ success: true });
