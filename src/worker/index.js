@@ -19,7 +19,7 @@ async function processEmail({ fileId, raw, envelope }) {
     to: (parsed.to?.value || []).map((v) => v.address),
     original_to: envelope.originalRcptTos || [],
     cc: (parsed.cc?.value || []).map((v) => v.address.toLowerCase()),
-    headers: Object.fromEntries(parsed.headerLines?.map((h) => [h.key, h.line]) || []),
+    // headers: Object.fromEntries(parsed.headerLines?.map((h) => [h.key, h.line]) || []),
     text: parsed.text || null,
     html: parsed.html || null,
     attachments: (parsed.attachments || []).map((a) => ({
