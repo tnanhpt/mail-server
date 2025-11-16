@@ -32,6 +32,7 @@ async function processEmail({ fileId, raw, envelope }) {
     file_id: fileId,
     read: false,
     raw_size: emailBuffer.length,
+    
   };
 
   await Email.create(doc);
