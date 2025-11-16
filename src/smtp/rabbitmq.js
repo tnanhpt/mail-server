@@ -1,4 +1,3 @@
-// src/smtp/rabbitmq.js
 import amqplib from "amqplib";
 import { config } from "../config/index.js";
 
@@ -58,7 +57,6 @@ export async function connectRabbitMQ() {
 
 export async function publishEmail(message) {
   console.log("🚀 ~ publishEmail ~ channel:", channel)
-
   if (!channel) throw new Error("RabbitMQ chưa kết nối");
 
   channel.sendToQueue(QUEUE, Buffer.from(JSON.stringify(message)), {

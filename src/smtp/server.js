@@ -16,7 +16,7 @@ export async function createSMTPServer() {
   const server = new SMTPServer({
     logger: false,
     disabledCommands: ["AUTH", "STARTTLS"],
-    size: 50 * 1024 * 1024,
+    size: 50 * 1024 * 1024, // 50MB max
     maxClients: 200,
 
     onRcptTo(address, session, cb) {
@@ -51,11 +51,10 @@ export async function createSMTPServer() {
       });
 
       stream.pipe(writeStream);
+      console.log("có email");
 
       writeStream.on("finish", async () => {
         try {
-            console.log("xxxxx");
-            
           await publishEmail({
             fileId,
             filePath,
