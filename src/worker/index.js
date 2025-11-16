@@ -1,0 +1,46 @@
+// src/worker/index.js
+import { simpleParser } from "mailparser";
+import fs from "fs/promises";
+import { connectRabbitMQ, consumeEmails } from "../smtp/rabbitmq.js";
+import { connectDB, Email } from "../db/mongo.js";
+import { config } from "../config/index.js";
+import { getVietnamTime } from "../smtp/rabbitmq.js";
+
+async function processEmail({ fileId, filePath, envelope }) {
+  const raw = await fs.readFile(filePath);
+  const parsed = await simpleParser(raw);
+
+  const now = new Date();
+  const doc = {
+    message_id: parsed.messageId || "",
+    subject: parsed.subject || "",
+    from: parsed.from?.text || "",
+    to: (parsed.to?.value || []).map((v) => v.address),
+    original_to: envelope.originalRcptTos || [],
+    cc: (parsed.cc?.value || []).map((v) => v.address.toLowerCase()),
+    headers: Object.fromEntries(parsed.headerLines?.map((h) => [h.key, h.line]) || []),
+    text: parsed.text || null,
+    html: parsed.html || null,
+    attachments: (parsed.attachments || []).map((a) => ({
+      filename: a.filename,
+      contentType: a.contentType,
+      size: a.size,
+    })),
+    received_at: now,
+    expires_at: new Date(now.getTime() + config.ttlMinutes * 60 * 1000),
+    file_id: fileId,
+    read: false,
+  };
+
+  await Email.create(doc);
+  await fs.unlink(filePath).catch(() => {});
+}
+
+async function start() {
+  await connectDB();
+  await connectRabbitMQ();
+  await consumeEmails(processEmail);
+  console.log("Worker started. TTL:", config.ttlMinutes, "minutes");
+}
+
+start().catch(console.error);

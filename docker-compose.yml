@@ -1,0 +1,60 @@
+# docker-compose.yml
+version: '3.8'
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+      - "25:25"                 # BẮT BUỘC để nhận mail
+    environment:
+      - PORT=3000
+      - SMTP_HOST=0.0.0.0
+      - SMTP_PORT=25
+      - ALLOWED_DOMAINS=example.com,localhost,dev.local
+      - TTL_MINUTES=30
+      - API_KEY=dev_test_key_123
+      - RABBITMQ_URL=amqp://admin:Nini2807@rabbitmq:5672
+      - MONGODB_URL=mongodb://mongo:27017/mailcatcher
+    depends_on:
+      - mongo
+      - rabbitmq
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: npm run worker
+    environment:
+      - TTL_MINUTES=30
+      - RABBITMQ_URL=amqp://admin:Nini2807@rabbitmq:5672
+      - MONGODB_URL=mongodb://mongo:27017/mailcatcher
+    depends_on:
+      - mongo
+      - rabbitmq
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=Nini2807
+      - RABBITMQ_DEFAULT_VHOST=/
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
