@@ -1,6 +1,7 @@
 // src/db/mongo.js
 import mongoose from "mongoose";
 import { config } from "../config/index.js";
+console.log("🚀 ~ config:", config)
 
 let isConnected = false;
 
