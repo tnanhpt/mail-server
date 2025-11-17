@@ -47,7 +47,7 @@ export async function connectRabbitMQ() {
 
     return true; // success
 
-  } catch (err:any) {
+  } catch (err) {
     console.error(`[RABBITMQ] Kết nối thất bại: ${err.message}`);
     return false; // fail
   }
