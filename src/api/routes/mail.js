@@ -49,7 +49,7 @@ router.get("/by-email/:address", async (req, res) => {
     })
       .sort({ received_at: -1 })
       .select(
-        "-raw -__v"
+        "subject text html received_at from to read expires_at"
       )
       .limit(50)
       .lean();
