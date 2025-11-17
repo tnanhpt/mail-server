@@ -1,7 +1,7 @@
 // src/worker/index.js
 import { simpleParser } from "mailparser";
 import fs from "fs/promises";
-import { connectRabbitMQ, consumeEmails } from "../smtp/rabbitmq.js";
+import { connectRabbitMQ, connectRabbitMQWithRetry, consumeEmails } from "../smtp/rabbitmq.js";
 import { connectDB, Email } from "../db/mongo.js";
 import { config } from "../config/index.js";
 import { getVietnamTime } from "../smtp/rabbitmq.js";
@@ -40,8 +40,8 @@ async function processEmail({ fileId, raw, envelope }) {
 
 async function start() {
   await connectDB();
+  await connectRabbitMQWithRetry();
   await consumeEmails(processEmail);
-  await connectRabbitMQ();
 
 }
 

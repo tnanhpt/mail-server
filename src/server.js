@@ -9,7 +9,7 @@ import { createSMTPServer } from "./smtp/server.js";
 
 import mailRoutes from "./api/routes/mail.js";
 import { apiKeyAuth } from "./api/middlewares/auth.js";
-import { connectRabbitMQ } from "./smtp/rabbitmq.js";
+import { connectRabbitMQ, connectRabbitMQWithRetry } from "./smtp/rabbitmq.js";
 
 const app = express();
 
@@ -23,7 +23,7 @@ app.use("/api/v1/mails", apiKeyAuth, mailRoutes);
 
 async function start() {
   await connectDB();
-  await connectRabbitMQ();
+  await connectRabbitMQWithRetry();
   await createSMTPServer();
   app.listen(config.port, config.host, () => {
     console.log(`API running on http://${config.host}:${config.port}`);
