@@ -32,7 +32,7 @@ export function useMailbox(email: string, pollInterval = 5000) {
     };
 
     load();
-    timer = window.setInterval(load, pollInterval);
+    // timer = window.setInterval(load, pollInterval);
 
     return () => {
       if (timer) clearInterval(timer);

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { BlocksShuffle3Icon } from "@/components/ui/icons/svg-spinners-blocks-shuffle-3";
 
 const DOMAINS = [
   "mail.anhpham.info",
@@ -8,28 +9,50 @@ const DOMAINS = [
   "dropinboxes.com",
 ];
 
-const EmailForm: React.FC<{ onCreate: (mail: string) => void }> = ({
-  onCreate,
-}) => {
+const KEY_LOCAL_USERNAME = "templ-apt-username";
+const KEY_LOCAL_DOMAIN = "templ-apt-domain";
+
+const EmailForm: React.FC<{
+  onGetEmail: (username: string, domain: string) => void;
+  loading: boolean;
+}> = ({ onGetEmail, loading }) => {
   const [username, setUsername] = useState<string>("");
   const [domain, setDomain] = useState<string>(DOMAINS[0]);
+  useEffect(() => {
+    const load = () => {
+      const usernameSaved = localStorage.getItem(KEY_LOCAL_USERNAME);
+      const domainSaved = localStorage.getItem(KEY_LOCAL_DOMAIN);
+      if (usernameSaved) {
+        setUsername(usernameSaved || "");
+      }
+      if (domainSaved) {
+        setDomain(domainSaved);
+      }
+      if (domainSaved && usernameSaved) {
+        onGetEmail(usernameSaved, domainSaved);
+      }
+    };
+    load();
+    return () => {};
+  }, [setUsername]);
 
   const handleCreate = () => {
-    const email = `${username || "anon"}@${domain}`;
-    console.log("create email:", email);
-    onCreate(`${username || "anon"}@${domain}`);
-    // gọi API...
+    const unameTrim = username?.trim();
+    const domainTrim = domain?.trim();
+    localStorage.setItem(KEY_LOCAL_USERNAME, unameTrim);
+    localStorage.setItem(KEY_LOCAL_DOMAIN, domainTrim);
+    onGetEmail(username, domain);
   };
 
   return (
-    <section className="w-full mt-8 px-4">
+    <section className="w-full mt-8 px-4 flex-none">
       <div className="max-w-4xl mx-auto">
         <div className="text-center">
           <h1 className="text-3xl sm:text-4xl font-bold">
             FREE Temporary Email
           </h1>
           <p className="text-gray-500 mt-2">
-            Free, Fast, Private — dùng ngay không cần đăng ký
+            Free, Fast, Private — use immediately without logging in!
           </p>
         </div>
 
@@ -63,16 +86,16 @@ const EmailForm: React.FC<{ onCreate: (mail: string) => void }> = ({
                 </option>
               ))}
             </select>
-
             <div className="sm:col-span-2 md:col-auto">
               <motion.button
                 onClick={handleCreate}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                className="w-full md:w-auto px-5 py-3 rounded-md bg-purple-600 text-white font-medium hover:bg-purple-700"
+                className="w-full md:w-auto px-5 py-3 rounded-md bg-purple-600 text-white font-medium hover:bg-purple-700 flex gap-2"
               >
-                Get Email
+                <BlocksShuffle3Icon className={loading ? "block" : "hidden"} />{" "}
+                <span>Get Email</span>
               </motion.button>
             </div>
           </div>

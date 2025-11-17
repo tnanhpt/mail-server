@@ -1,12 +1,14 @@
 import API from "@/helpers/axios";
 
 export type Mail = {
+  _id: string;
   message_id: string;
   from: string;
   subject: string;
   text: string;
   html: string;
   read: boolean;
+  received_at: string;
 };
 
 export type MailboxResult = {
@@ -24,7 +26,13 @@ async function getEmailContent(id: string): Promise<Mail[]> {
   return res.data as Mail[];
 }
 
+async function readEmail(id: string): Promise<{ success: boolean }> {
+  const res = await API.post(`/mails/read/${id}`);
+  return res.data;
+}
+
 export const MailAPI = {
   getEmail,
   getEmailContent,
+  readEmail,
 };

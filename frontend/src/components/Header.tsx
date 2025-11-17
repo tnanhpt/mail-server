@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 
 const Header: React.FC = () => {
   return (
-    <header className="w-full bg-white/60 backdrop-blur-sm sticky top-0 z-40 border-b">
+    <header className="w-full bg-white/60 backdrop-blur-sm sticky top-0 z-40 border-b flex-none">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* left: logo */}

@@ -35,7 +35,6 @@ router.get("/:id", async (req, res) => {
   res.json(email);
 });
 
-// === GET: Email theo địa chỉ email (MỚI) ===
 router.get("/by-email/:address", async (req, res) => {
   const { address } = req.params;
   if (!address || !address.includes("@")) {
@@ -69,6 +68,24 @@ router.get("/messages", async (req, res) => {
     .select("-raw -__v")
     .limit(50);
   res.json(emails);
+});
+
+router.post("/read/:id", async (req, res) => {
+  try {
+    await Email.findByIdAndUpdate(req.params.id, {
+      $set: {
+        read: true,
+      },
+    });
+
+    return res.json({
+      success: true,
+    });
+  } catch (error) {
+    return res.json({
+      success: false,
+    });
+  }
 });
 
 router.delete("/:id", async (req, res) => {
