@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useMailbox } from "@/hooks/useMailbox";
 
 const DOMAINS = [
   "mail.anhpham.info",

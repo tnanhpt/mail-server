@@ -1,5 +1,6 @@
 // src/lib/axios.ts
 import axios from "axios";
+console.log(import.meta.env);
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_BASE,

@@ -59,7 +59,7 @@ const Inbox: React.FC<{ email: string }> = ({ email }) => {
           }`}
         >
           <div className="divide-y">
-            {MOCK.map((m) => (
+            {messages?.emails?.map((m) => (
               <button
                 key={m.id}
                 onClick={() => setSelected(m.id)}

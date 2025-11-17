@@ -1,4 +1,4 @@
-import axios from "axios";
+import API from "@/helpers/axios";
 
 export type Mail = {
   message_id: string;
@@ -15,12 +15,12 @@ export type MailboxResult = {
 };
 
 async function getEmail(email: string): Promise<MailboxResult> {
-  const res = await axios.get(`/mails/by-email/${email}`);
+  const res = await API.get(`/mails/by-email/${email}`);
   return res.data;
 }
 
 async function getEmailContent(id: string): Promise<Mail[]> {
-  const res = await axios.get(`/mails/${id}`);
+  const res = await API.get(`/mails/${id}`);
   return res.data as Mail[];
 }
 

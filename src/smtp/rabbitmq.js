@@ -56,7 +56,6 @@ export async function connectRabbitMQ() {
 }
 
 export async function publishEmail(message) {
-  console.log("🚀 ~ publishEmail ~ channel:", channel)
   if (!channel) throw new Error("RabbitMQ chưa kết nối");
 
   channel.sendToQueue(QUEUE, Buffer.from(JSON.stringify(message)), {
@@ -65,6 +64,7 @@ export async function publishEmail(message) {
 }
 
 export async function consumeEmails(handler) {
+  console.log("🚀 ~ consumeEmails ~ channel:", channel)
   if (!channel) throw new Error("RabbitMQ chưa kết nối");
   channel.prefetch(10);
   console.log(`[RABBITMQ] Worker bắt đầu lắng nghe queue: ${QUEUE}`);
