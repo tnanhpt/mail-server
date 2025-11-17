@@ -48,8 +48,11 @@ router.get("/by-email/:address", async (req, res) => {
       $or: [{ to: normalized }, { cc: normalized }],
     })
       .sort({ received_at: -1 })
-      .select("-raw -__v")
-      .limit(50);
+      .select(
+        "-raw -__v subject text html received_at from to read expires_at"
+      )
+      .limit(50)
+      .lean();
 
     res.json({
       // query: normalized,

@@ -23,10 +23,10 @@ const emailSchema = new mongoose.Schema({
   // headers: Object,
   text: String,
   html: String,
-  attachments: [Object],
+  // attachments: [Object],
   received_at: { type: Date, default: Date.now },
   expires_at: { type: Date, required: true },
-  file_id: String,
+  // file_id: String,
   read: { type: Boolean, default: false },
   raw_size: Number,
 });

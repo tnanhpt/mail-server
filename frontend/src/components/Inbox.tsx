@@ -1,19 +1,56 @@
 import { MailAPI, type Mail } from "@/api/mail.api";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import DOMPurify from "dompurify";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { RefreshCwIcon } from "@/components/ui/icons/lucide-refresh-cw";
 dayjs.extend(relativeTime);
+import duration from "dayjs/plugin/duration";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+dayjs.extend(duration);
 
 type InboxProps = {
   messages: Mail[];
+  selected: Mail | null;
   onUpdateMessage: (id: string) => void;
+  setSelected: (message: Mail) => void;
 };
 
 const Inbox: React.FC<InboxProps> = React.memo(
-  ({ messages, onUpdateMessage }) => {
-    const [selected, setSelected] = useState<Mail | null>(null);
+  ({ messages, onUpdateMessage, setSelected, selected }) => {
+    const [minutesLeft, setMinutesLeft] = useState<number | null>(null);
+
+    useEffect(() => {
+      if (!selected?.expires_at) {
+        setMinutesLeft(null);
+        return;
+      }
+
+      const compute = () =>
+        Math.max(0, dayjs(selected.expires_at).diff(dayjs(), "minute"));
+
+      // initial compute immediately
+      setMinutesLeft(compute());
+
+      // update every minute
+      const iv = setInterval(() => {
+        setMinutesLeft(compute());
+      }, 60_000);
+
+      // cleanup on selected change / unmount
+      return () => clearInterval(iv);
+    }, [selected?.expires_at]);
+
+    // helper to produce text
+    const minutesLeftText = (min: number | null) => {
+      if (min === null) return "";
+      if (min <= 0)
+        return "This email will be automatically deleted in less than a minute.";
+      return `This email will be automatically deleted in ${min} minute${
+        min === 1 ? "" : "s"
+      }.`;
+    };
 
     const ReadEmail = async (id: string) => {
       try {
@@ -51,16 +88,23 @@ const Inbox: React.FC<InboxProps> = React.memo(
               {messages?.map((m) => (
                 <a
                   href="#content-email"
-                  key={m.message_id}
+                  key={m._id}
                   onClick={() => selectEmail(m)}
                   className={`w-full text-left px-4 py-3 hover:bg-gray-50 flex justify-between items-start gap-3 ${
-                    selected?.message_id === m.message_id ? "bg-gray-200" : ""
+                    selected?._id === m._id ? "bg-gray-200" : ""
                   }`}
                 >
                   <div>
-                    <div className={m.read ? "text-sm" : "text-sm font-medium"}>
+                    <div
+                      className={
+                        !m?.read || selected?._id == m._id
+                          ? "text-sm font-medium"
+                          : "text-sm"
+                      }
+                    >
                       <span>{m.subject}</span>
                     </div>
+
                     <div className="text-xs text-gray-400 text-right">
                       {dayjs(m?.received_at).fromNow()}
                     </div>
@@ -81,10 +125,30 @@ const Inbox: React.FC<InboxProps> = React.memo(
             {selected ? (
               <div className="p-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">{selected?.subject}</h3>
-                  <div className="text-xs text-gray-400 text-right">
-                    {dayjs(selected?.received_at).format("DD/MM/YYYY HH:mm:ss")}
+                  <div>
+                    <h1 className="text-xl font-semibold">
+                      {selected?.subject}
+                    </h1>
+                    <p className="text-sm text-yellow-600 bg-yellow-50 py-1 rounded">
+                      {minutesLeftText(minutesLeft)}
+                    </p>
                   </div>
+                  <div>
+                    <button className="flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md ease-in-out">
+                      <Trash2 size={16} />
+                      Delete
+                    </button>
+                    <p className="text-sm mt-2 text-gray-400 text-right">
+                      {dayjs(selected?.received_at).format(
+                        "DD/MM/YYYY HH:mm:ss"
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center my-4">
+                  <div className="flex-grow border-t border-gray-200"></div>
+                  <span className="px-4 text-gray-500">Message Content</span>
+                  <div className="flex-grow border-t border-gray-200"></div>
                 </div>
                 <div className="mt-3 text-sm text-gray-700">
                   <div dangerouslySetInnerHTML={{ __html: html }} />

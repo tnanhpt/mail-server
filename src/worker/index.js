@@ -22,14 +22,14 @@ async function processEmail({ fileId, raw, envelope }) {
     // headers: Object.fromEntries(parsed.headerLines?.map((h) => [h.key, h.line]) || []),
     text: parsed.text || null,
     html: parsed.html || null,
-    attachments: (parsed.attachments || []).map((a) => ({
-      filename: a.filename,
-      contentType: a.contentType,
-      size: a.size,
-    })),
+    // attachments: (parsed.attachments || []).map((a) => ({
+    //   filename: a.filename,
+    //   contentType: a.contentType,
+    //   size: a.size,
+    // })),
     received_at: now,
     expires_at: new Date(now.getTime() + config.ttlMinutes * 60 * 1000),
-    file_id: fileId,
+    // file_id: fileId,
     read: false,
     raw_size: emailBuffer.length,
     

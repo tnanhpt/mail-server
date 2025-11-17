@@ -2,13 +2,13 @@ import API from "@/helpers/axios";
 
 export type Mail = {
   _id: string;
-  message_id: string;
   from: string;
   subject: string;
   text: string;
   html: string;
   read: boolean;
   received_at: string;
+  expires_at: string;
 };
 
 export type MailboxResult = {

@@ -10,7 +10,7 @@ const POLL_INTERVAL_MS = 5000;
 const Home: React.FC = () => {
   const [loadingGetMail, setLoadingGetMail] = useState(false);
   const [listMessage, setListMessage] = useState<Mail[]>([]);
-
+  const [selected, setSelected] = useState<Mail | null>(null);
   // interval ID ref (browser setInterval returns number)
   const intervalRef = useRef<number | null>(null);
   // guard để tránh gọi chồng request khi fetch chưa xong
@@ -70,7 +70,7 @@ const Home: React.FC = () => {
   const onUpdateMessage = (id: string) => {
     setListMessage((old) =>
       old.map((item) => {
-        if (item.message_id === id) {
+        if (item._id === id) {
           return {
             ...item,
             read: true,
@@ -85,7 +85,12 @@ const Home: React.FC = () => {
     <div className="flex flex-col h-screen">
       <Header />
       <EmailForm onGetEmail={onGetEmail} loading={loadingGetMail} />
-      <Inbox onUpdateMessage={onUpdateMessage} messages={listMessage} />
+      <Inbox
+        onUpdateMessage={onUpdateMessage}
+        messages={listMessage}
+        selected={selected}
+        setSelected={setSelected}
+      />
     </div>
   );
 };
