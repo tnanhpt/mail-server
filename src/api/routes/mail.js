@@ -20,13 +20,13 @@ router.use(async (req, res, next) => {
   }
 });
 
-router.get("/", async (req, res) => {
-  const emails = await Email.find()
-    .sort({ received_at: -1 })
-    .select("-raw -__v")
-    .limit(50);
-  res.json(emails);
-});
+// router.get("/", async (req, res) => {
+//   const emails = await Email.find()
+//     .sort({ received_at: -1 })
+//     .select("-raw -__v")
+//     .limit(50);
+//   res.json(emails);
+// });
 
 router.get("/:id", async (req, res) => {
   const email = await Email.findById(req.params.id);
@@ -46,17 +46,14 @@ router.get("/by-email/:address", async (req, res) => {
 
   try {
     const emails = await Email.find({
-      $or: [
-        { to: normalized },
-        { cc: normalized },
-      ],
+      $or: [{ to: normalized }, { cc: normalized }],
     })
       .sort({ received_at: -1 })
       .select("-raw -__v")
       .limit(50);
 
     res.json({
-      query: normalized,
+      // query: normalized,
       count: emails.length,
       emails,
     });
@@ -64,6 +61,14 @@ router.get("/by-email/:address", async (req, res) => {
     console.error("[API] Lỗi tìm email theo address:", err);
     res.status(500).json({ error: "Internal server error" });
   }
+});
+
+router.get("/messages", async (req, res) => {
+  const emails = await Email.find()
+    .sort({ received_at: -1 })
+    .select("-raw -__v")
+    .limit(50);
+  res.json(emails);
 });
 
 router.delete("/:id", async (req, res) => {
