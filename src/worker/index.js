@@ -7,7 +7,6 @@ import { config } from "../config/index.js";
 import { getVietnamTime } from "../smtp/rabbitmq.js";
 
 async function processEmail({ fileId, raw, envelope }) {
-  // const raw = await fs.readFile(filePath);
   const emailBuffer = Buffer.from(raw, "base64");
   const parsed = await simpleParser(emailBuffer);
 
