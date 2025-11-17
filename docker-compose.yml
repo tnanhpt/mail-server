@@ -51,16 +51,16 @@ services:
     restart: unless-stopped
     networks:
       - host
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
-    ports:
-      - "80:80"
-    depends_on:
-      - api
-    restart: unless-stopped
-    networks:
-      - host
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile.prod
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #     - api
+  #   restart: unless-stopped
+  #   networks:
+  #     - host
 volumes:
   mongo-data:
