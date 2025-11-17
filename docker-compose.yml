@@ -49,6 +49,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     restart: unless-stopped
     networks:
       - host
@@ -65,3 +67,4 @@ services:
   #     - host
 volumes:
   mongo-data:
+  rabbitmq_data:

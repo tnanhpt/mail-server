@@ -40,9 +40,9 @@ async function processEmail({ fileId, raw, envelope }) {
 
 async function start() {
   await connectDB();
-  await connectRabbitMQ();
   await consumeEmails(processEmail);
-  console.log("Worker started. TTL:", config.ttlMinutes, "minutes");
+  await connectRabbitMQ();
+
 }
 
 start().catch(console.error);
