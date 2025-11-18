@@ -63,17 +63,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
-    ports:
-      - "6868:80"
-    depends_on:
-      - api
-    restart: unless-stopped
-    networks:
-      - host
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile.prod
+  #   ports:
+  #     - "6868:80"
+  #   depends_on:
+  #     - api
+  #   restart: unless-stopped
+  #   networks:
+  #     - host
 volumes:
   mongo-data:
   rabbitmq_data:
