@@ -19,7 +19,7 @@ app.use(morgan("combined"));
 app.use(express.json({ limit: "10mb" }));
 
 app.get("/health", (req, res) => res.json({ status: "ok", time: new Date() }));
-app.use("/v1/mails", apiKeyAuth, mailRoutes);
+app.use("/api/v1/mails", apiKeyAuth, mailRoutes);
 
 async function start() {
   await connectDB();
