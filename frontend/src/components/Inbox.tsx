@@ -6,8 +6,8 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { RefreshCwIcon } from "@/components/ui/icons/lucide-refresh-cw";
 dayjs.extend(relativeTime);
 import duration from "dayjs/plugin/duration";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Mail as MailIcon } from "lucide-react";
+import { BlocksShuffle3Icon } from "@/components/ui/icons/svg-spinners-blocks-shuffle-3";
 dayjs.extend(duration);
 
 type InboxProps = {
@@ -15,10 +15,19 @@ type InboxProps = {
   selected: Mail | null;
   onUpdateMessage: (id: string) => void;
   setSelected: (message: Mail) => void;
+  deleteEmail: (id: string) => void;
+  loadingDeleteEmail: boolean;
 };
 
 const Inbox: React.FC<InboxProps> = React.memo(
-  ({ messages, onUpdateMessage, setSelected, selected }) => {
+  ({
+    messages,
+    onUpdateMessage,
+    setSelected,
+    selected,
+    deleteEmail,
+    loadingDeleteEmail,
+  }) => {
     const [minutesLeft, setMinutesLeft] = useState<number | null>(null);
 
     useEffect(() => {
@@ -124,18 +133,25 @@ const Inbox: React.FC<InboxProps> = React.memo(
           >
             {selected ? (
               <div className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-center justify-between flex-wrap">
+                  <div className="flex-1">
                     <h1 className="text-xl font-semibold">
                       {selected?.subject}
                     </h1>
-                    <p className="text-sm text-yellow-600 bg-yellow-50 py-1 rounded">
+                    <p className="text-sm text-yellow-600 bg-yellow-50 py-1 rounded w-max px-2 mt-2 md:mt-0">
                       {minutesLeftText(minutesLeft)}
                     </p>
                   </div>
-                  <div>
-                    <button className="flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md ease-in-out">
-                      <Trash2 size={16} />
+                  <div className="flex-none">
+                    <button
+                      className="flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md ease-in-out md:mx-auto mt-4 md:mt-0"
+                      onClick={() => deleteEmail(selected?._id)}
+                    >
+                      {loadingDeleteEmail ? (
+                        <BlocksShuffle3Icon size={16} />
+                      ) : (
+                        <Trash2 size={16} />
+                      )}
                       Delete
                     </button>
                     <p className="text-sm mt-2 text-gray-400 text-right">
@@ -156,12 +172,20 @@ const Inbox: React.FC<InboxProps> = React.memo(
               </div>
             ) : (
               <div className="p-6 text-center text-gray-500 flex flex-col items-center justify-center h-100">
-                <RefreshCwIcon
-                  strokeWidth={1}
-                  color={"#c085ec"}
-                  size={120}
-                  style={{ animation: "spin 3s linear infinite" }}
-                />
+                <div className="relative">
+                  <RefreshCwIcon
+                    strokeWidth={1}
+                    size={160}
+                    style={{ animation: "spin 5s linear infinite" }}
+                    className="animate-spin"
+                  />
+                  <MailIcon
+                    className="absolute top-10 left-10"
+                    size={80}
+                    color={"#e1e8fe"}
+                  />
+                </div>
+
                 <div className="p-4 text-gray-500">
                   Refreshing every 5 seconds…
                 </div>

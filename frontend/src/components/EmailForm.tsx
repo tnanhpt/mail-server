@@ -3,10 +3,9 @@ import { motion } from "framer-motion";
 import { BlocksShuffle3Icon } from "@/components/ui/icons/svg-spinners-blocks-shuffle-3";
 
 const DOMAINS = [
-  "mail.anhpham.info",
-  "fviadropinbox.com",
-  "fviamail.work",
-  "dropinboxes.com",
+  "getfmail.com",
+  "okmail.live",
+  "jetmail.live",
 ];
 
 const KEY_LOCAL_USERNAME = "templ-apt-username";

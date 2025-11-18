@@ -9,15 +9,19 @@ const POLL_INTERVAL_MS = 5000;
 
 const Home: React.FC = () => {
   const [loadingGetMail, setLoadingGetMail] = useState(false);
+  const [loadingDelete, setLoadingDelete] = useState(false);
+
   const [listMessage, setListMessage] = useState<Mail[]>([]);
   const [selected, setSelected] = useState<Mail | null>(null);
   // interval ID ref (browser setInterval returns number)
   const intervalRef = useRef<number | null>(null);
   // guard để tránh gọi chồng request khi fetch chưa xong
   const isFetchingRef = useRef(false);
+  const prevUsernameRef = useRef("");
 
   const fetchEmail = async (email: string, isSetLoading: boolean = true) => {
     if (isFetchingRef.current) return;
+
     try {
       isFetchingRef.current = true;
       if (isSetLoading) setLoadingGetMail(true);
@@ -44,6 +48,13 @@ const Home: React.FC = () => {
       stopPolling();
     }
     if (!username) return;
+    if (prevUsernameRef.current !== username) {
+      setSelected(null);
+      setListMessage([]);
+    }
+
+    prevUsernameRef.current = username;
+
     await fetchEmail(email);
 
     intervalRef.current = window.setInterval(() => {
@@ -81,14 +92,37 @@ const Home: React.FC = () => {
     );
   };
 
+  const deleteEmail = async (id: string) => {
+    try {
+      setLoadingDelete(true);
+      await sleep(500);
+      const res = await MailAPI.deleteEmail(id);
+      if (!res.success) {
+        throw new Error("Error");
+      }
+      setListMessage((emails) => emails.filter((e) => e._id != id));
+      setSelected(null);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        alert(err.message);
+      } else {
+        alert("An unknown error occurred.");
+      }
+    } finally {
+      setLoadingDelete(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen  text-gray-800">
       <Header />
       <EmailForm onGetEmail={onGetEmail} loading={loadingGetMail} />
       <Inbox
         onUpdateMessage={onUpdateMessage}
         messages={listMessage}
         selected={selected}
+        deleteEmail={deleteEmail}
+        loadingDeleteEmail={loadingDelete}
         setSelected={setSelected}
       />
     </div>

@@ -30,9 +30,14 @@ async function readEmail(id: string): Promise<{ success: boolean }> {
   const res = await API.post(`/mails/read/${id}`);
   return res.data;
 }
+async function deleteEmail(id: string): Promise<{ success: boolean }> {
+  const res = await API.delete(`/mails/${id}`);
+  return res.data;
+}
 
 export const MailAPI = {
   getEmail,
   getEmailContent,
   readEmail,
+  deleteEmail,
 };

@@ -1,5 +1,4 @@
-# docker-compose.yml
-version: '3.8'
+version: "3.8"
 
 networks:
   host:
@@ -8,7 +7,7 @@ services:
     build: .
     ports:
       - "3000:3000"
-      - "25:25" 
+      - "25:25"
     env_file:
       - .env
     depends_on:
@@ -17,6 +16,11 @@ services:
     restart: unless-stopped
     networks:
       - host
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   worker:
     build: .
     command: npm run worker
@@ -32,39 +36,44 @@ services:
     image: mongo:6
     volumes:
       - mongo-data:/data/db
-    ports:
-      - "27017:27017"
+    # ports:
+    #   - "27017:27017"
     restart: unless-stopped
     networks:
       - host
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      - "5672:5672"
+      # - "5672:5672"
       - "15672:15672"
     env_file:
       - .env
-    healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     restart: unless-stopped
     networks:
       - host
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile.prod
-  #   ports:
-  #     - "80:80"
-  #   depends_on:
-  #     - api
-  #   restart: unless-stopped
-  #   networks:
-  #     - host
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "6868:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - host
 volumes:
   mongo-data:
   rabbitmq_data:
