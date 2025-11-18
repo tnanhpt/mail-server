@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { BlocksShuffle3Icon } from "@/components/ui/icons/svg-spinners-blocks-shuffle-3";
+import CopyButton from "@/components/CopyBtn";
 
-const DOMAINS = [
-  "getfmail.com",
-  "okmail.live",
-  "jetmail.live",
-];
+const DOMAINS = ["getfmail.com", "okmail.live", "jetmail.live"];
 
 const KEY_LOCAL_USERNAME = "templ-apt-username";
 const KEY_LOCAL_DOMAIN = "templ-apt-domain";
@@ -43,6 +40,7 @@ const EmailForm: React.FC<{
     onGetEmail(username, domain);
   };
 
+
   return (
     <section className="w-full mt-8 px-4 flex-none">
       <div className="max-w-4xl mx-auto">
@@ -58,7 +56,7 @@ const EmailForm: React.FC<{
         {/* form */}
         <div className="mt-8">
           {/* On small screens: stack; on md+: row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[1fr_200px_200px] gap-3 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-[1fr_200px_300px] gap-3 items-end">
             <input
               className="w-full px-4 py-3 rounded-md border focus:outline-none focus:ring-2 focus:ring-purple-200"
               placeholder="Enter username (e.g. coolguy)"
@@ -85,17 +83,18 @@ const EmailForm: React.FC<{
                 </option>
               ))}
             </select>
-            <div className="sm:col-span-2 md:col-auto">
+            <div className="sm:col-span-2 md:col-auto flex items-center gap-2">
               <motion.button
                 onClick={handleCreate}
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                className="w-full md:w-auto px-5 py-3 rounded-md bg-purple-600 text-white font-medium hover:bg-purple-700 flex gap-2"
+                className="w-full md:w-auto px-5 py-3 rounded-md bg-purple-600 text-white font-medium hover:bg-purple-700 flex gap-2  items-center"
               >
                 <BlocksShuffle3Icon className={loading ? "block" : "hidden"} />{" "}
                 <span>Get Email</span>
               </motion.button>
+              <CopyButton text={`${username}@${domain}`} />
             </div>
           </div>
         </div>

@@ -18,6 +18,7 @@ const Home: React.FC = () => {
   // guard để tránh gọi chồng request khi fetch chưa xong
   const isFetchingRef = useRef(false);
   const prevUsernameRef = useRef("");
+  const prevDomainRef = useRef("");
 
   const fetchEmail = async (email: string, isSetLoading: boolean = true) => {
     if (isFetchingRef.current) return;
@@ -48,12 +49,16 @@ const Home: React.FC = () => {
       stopPolling();
     }
     if (!username) return;
-    if (prevUsernameRef.current !== username) {
+    if (
+      prevUsernameRef.current !== username ||
+      prevDomainRef.current !== domain
+    ) {
       setSelected(null);
       setListMessage([]);
     }
 
     prevUsernameRef.current = username;
+    prevDomainRef.current = domain;
 
     await fetchEmail(email);
 
