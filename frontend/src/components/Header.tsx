@@ -1,5 +1,5 @@
 import React from "react";
-import logo from "@/assets/images/mail.png";
+import logo from "@/assets/images/logo.png";
 
 const Header: React.FC = () => {
   return (

@@ -28,37 +28,62 @@ const Inbox: React.FC<InboxProps> = React.memo(
     deleteEmail,
     loadingDeleteEmail,
   }) => {
-    const [minutesLeft, setMinutesLeft] = useState<number | null>(null);
+    const [remaining, setRemaining] = useState<{ h: number; m: number } | null>(
+      null
+    );
 
     useEffect(() => {
       if (!selected?.expires_at) {
-        setMinutesLeft(null);
+        setRemaining(null);
         return;
       }
 
-      const compute = () =>
-        Math.max(0, dayjs(selected.expires_at).diff(dayjs(), "minute"));
+      const compute = () => {
+        const diffMin = dayjs(selected.expires_at).diff(dayjs(), "minute");
+        const safe = Math.max(0, diffMin);
+        return {
+          h: Math.floor(safe / 60),
+          m: safe % 60,
+        };
+      };
 
-      // initial compute immediately
-      setMinutesLeft(compute());
+      // tính ngay khi mount
+      setRemaining(compute());
 
-      // update every minute
+      // update mỗi phút
       const iv = setInterval(() => {
-        setMinutesLeft(compute());
+        setRemaining(compute());
       }, 60_000);
 
-      // cleanup on selected change / unmount
       return () => clearInterval(iv);
     }, [selected?.expires_at]);
 
     // helper to produce text
-    const minutesLeftText = (min: number | null) => {
-      if (min === null) return "";
-      if (min <= 0)
+    // const minutesLeftText = (min: number | null) => {
+    //   if (min === null) return "";
+    //   if (min <= 0)
+    //     return "This email will be automatically deleted in less than a minute.";
+    //   return `This email will be automatically deleted in ${min} minute${
+    //     min === 1 ? "" : "s"
+    //   }.`;
+    // };
+
+    const remainingText = (t: { h: number; m: number } | null) => {
+      if (!t) return "";
+
+      const { h, m } = t;
+
+      if (h === 0 && m === 0)
         return "This email will be automatically deleted in less than a minute.";
-      return `This email will be automatically deleted in ${min} minute${
-        min === 1 ? "" : "s"
-      }.`;
+
+      if (h === 0)
+        return `This email will be automatically deleted in ${m} minute${
+          m === 1 ? "" : "s"
+        }.`;
+
+      return `This email will be automatically deleted in ${h} hour${
+        h === 1 ? "" : "s"
+      } ${m} minute${m === 1 ? "" : "s"}.`;
     };
 
     const ReadEmail = async (id: string) => {
@@ -139,7 +164,7 @@ const Inbox: React.FC<InboxProps> = React.memo(
                       {selected?.subject}
                     </h1>
                     <p className="text-sm text-yellow-600 bg-yellow-50 py-1 rounded w-max px-2 mt-2 md:mt-0">
-                      {minutesLeftText(minutesLeft)}
+                      {remainingText(remaining)}
                     </p>
                   </div>
                   <div className="flex-none">
@@ -176,8 +201,8 @@ const Inbox: React.FC<InboxProps> = React.memo(
                   <RefreshCwIcon
                     strokeWidth={1}
                     size={160}
-                    style={{ animation: "spin 5s linear infinite" }}
-                    className="animate-spin"
+                    // style={{ animation: "spin 5s linear infinite" }}
+                    // className="animate-spin"
                   />
                   <MailIcon
                     className="absolute top-10 left-10"
@@ -187,7 +212,8 @@ const Inbox: React.FC<InboxProps> = React.memo(
                 </div>
 
                 <div className="p-4 text-gray-500">
-                  Refreshing every 5 seconds…
+                  Click the <strong>Get Email</strong> button to refresh the
+                  page
                 </div>
               </div>
             )}

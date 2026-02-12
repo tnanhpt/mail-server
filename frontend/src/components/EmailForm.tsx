@@ -40,7 +40,6 @@ const EmailForm: React.FC<{
     onGetEmail(username, domain);
   };
 
-
   return (
     <section className="w-full mt-8 px-4 flex-none">
       <div className="max-w-4xl mx-auto">
@@ -92,9 +91,20 @@ const EmailForm: React.FC<{
                 className="w-full md:w-auto px-5 py-3 rounded-md bg-purple-600 text-white font-medium hover:bg-purple-700 flex gap-2  items-center"
               >
                 <BlocksShuffle3Icon className={loading ? "block" : "hidden"} />{" "}
-                <span>Get Email</span>
+                <span>Read Email</span>
               </motion.button>
               <CopyButton text={`${username}@${domain}`} />
+{/* 
+              <motion.button
+                onClick={handleCreate}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                className="w-full md:w-auto px-5 py-3 rounded-md bg-purple-600 text-white font-medium hover:bg-purple-700 flex gap-2  items-center"
+              >
+                <BlocksShuffle3Icon className={loading ? "block" : "hidden"} />{" "}
+                <span>Random Email</span>
+              </motion.button> */}
             </div>
           </div>
         </div>
