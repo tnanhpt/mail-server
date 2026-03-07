@@ -37,6 +37,7 @@ router.get("/:id", async (req, res) => {
 
 router.get("/by-email/:address", async (req, res) => {
   const { address } = req.params;
+  const { filterRead } = req.query;
   if (!address || !address.includes("@")) {
     return res.status(400).json({ error: "Invalid email address" });
   }
@@ -44,13 +45,16 @@ router.get("/by-email/:address", async (req, res) => {
   const normalized = address.toLowerCase().trim();
 
   try {
-    const emails = await Email.find({
-      $or: [{ to: normalized }, { cc: normalized }],
-    })
+    let query = { $or: [{ to: normalized }, { cc: normalized }] };
+    if (filterRead != "") {
+      query = {
+        ...query,
+        read: filterRead,
+      };
+    }
+    const emails = await Email.find(query)
       .sort({ received_at: -1 })
-      .select(
-        "subject html received_at from to read expires_at"
-      )
+      .select("subject html received_at from to read expires_at")
       .limit(50)
       .lean();
 
