@@ -45,12 +45,12 @@ router.get("/by-email/:address", async (req, res) => {
   const normalized = address.toLowerCase().trim();
 
   try {
-    let query = { $or: [{ to: normalized }, { cc: normalized }] };
-    if (filterRead != "") {
-      query = {
-        ...query,
-        read: filterRead,
-      };
+    let query = {
+      $or: [{ to: normalized }, { cc: normalized }],
+    };
+
+    if (filterRead !== undefined) {
+      query.read = filterRead === "true";
     }
     const emails = await Email.find(query)
       .sort({ received_at: -1 })
