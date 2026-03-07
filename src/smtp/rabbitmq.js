@@ -74,7 +74,7 @@ export async function connectRabbitMQWithRetry() {
 
 export async function publishEmail(message) {
   if (!channel) throw new Error("RabbitMQ chưa kết nối");
-  console.log("Nhận được email ở địa chỉ:", message?.rcptTo[0]);
+  console.log("Nhận được email ở địa chỉ:", message?.envelope?.rcptTo[0]);
 
   const buffer = Buffer.from(JSON.stringify(message));
 
