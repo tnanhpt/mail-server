@@ -21,6 +21,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - email-data:/tmp/emails 
   worker:
     build: .
     command: npm run worker
@@ -32,6 +34,8 @@ services:
     restart: unless-stopped
     networks:
       - host
+    volumes:
+      - email-data:/tmp/emails
   mongo:
     image: mongo:6
     volumes:
@@ -77,3 +81,4 @@ services:
 volumes:
   mongo-data:
   rabbitmq_data:
+  email-data:
