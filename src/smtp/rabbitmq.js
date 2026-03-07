@@ -74,7 +74,7 @@ export async function connectRabbitMQWithRetry() {
 
 export async function publishEmail(message) {
   if (!channel) throw new Error("RabbitMQ chưa kết nối");
-  console.log("Nhận được email ở địa chỉ:", JSON.stringify(message));
+  console.log("Nhận được email ở địa chỉ:", message?.rcptTo[0]);
 
   const buffer = Buffer.from(JSON.stringify(message));
 
@@ -104,6 +104,7 @@ export async function consumeEmails(handler) {
   console.log(`[RABBITMQ] Worker bắt đầu lắng nghe queue: ${QUEUE}`);
 
   await channel.consume(QUEUE, async (msg) => {
+    console.log("🚀 ~ consumeEmails ~ msg:", msg)
     if (!msg) return;
 
     try {
