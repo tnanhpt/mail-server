@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { BlocksShuffle3Icon } from "@/components/ui/icons/svg-spinners-blocks-shuffle-3";
 import CopyButton from "@/components/CopyBtn";
-import { sleep } from "@/helpers/func";
 
 const DOMAINS = ["getfmail.com", "okmail.live", "jetmail.live"];
 
@@ -42,7 +41,7 @@ const EmailForm: React.FC<{
     return () => {};
   }, [setUsername]);
 
-  const handlePaste = async (event) => {
+  const handlePaste = async (event: any) => {
     const pasteData = event.clipboardData.getData("text");
     const regex =
       /[A-Za-z0-9._%+-]+@(jetmail\.live|getfmail\.com|okmail\.live)/g;

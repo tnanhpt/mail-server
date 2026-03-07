@@ -14,7 +14,7 @@ type InboxProps = {
   messages: Mail[];
   selected: Mail | null;
   onUpdateMessage: (id: string) => void;
-  setSelected: (message: Mail) => void;
+  setSelected: (message: Mail | null) => void;
   deleteEmail: (id: string) => void;
   loadingDeleteEmail: boolean;
 };
@@ -24,7 +24,7 @@ const Inbox: React.FC<InboxProps> = React.memo(
     const [remaining, setRemaining] = useState<{ h: number; m: number } | null>(
       null,
     );
-    const [loadingGetMailContent, setLoadingGetMailContent] = useState(false);
+    // const [loadingGetMailContent, setLoadingGetMailContent] = useState(false);
 
     useEffect(() => {
       if (!selected?.expires_at) {
@@ -82,7 +82,7 @@ const Inbox: React.FC<InboxProps> = React.memo(
 
     const fetchEmailContent = async (id: string) => {
       try {
-        setLoadingGetMailContent(true);
+        // setLoadingGetMailContent(true);
         const data = await MailAPI.getEmailContent(id);
         setSelected(data);
       } catch (err: unknown) {
@@ -93,12 +93,12 @@ const Inbox: React.FC<InboxProps> = React.memo(
           alert("An unknown error occurred.");
         }
       } finally {
-        setLoadingGetMailContent(false);
+        // setLoadingGetMailContent(false);
       }
     };
 
     const selectEmail = async (message: Mail) => {
-      var oldMsgId = selected?._id;
+      const oldMsgId = selected?._id;
       if (oldMsgId !== message._id) {
         setSelected(message);
         await fetchEmailContent(message?._id);
