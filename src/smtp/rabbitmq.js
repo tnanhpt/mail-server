@@ -51,7 +51,6 @@ export async function connectRabbitMQ() {
     });
 
     return true;
-
   } catch (err) {
     console.error(`[RABBITMQ] Kết nối thất bại: ${err.message}`);
     return false;
@@ -75,6 +74,7 @@ export async function connectRabbitMQWithRetry() {
 
 export async function publishEmail(message) {
   if (!channel) throw new Error("RabbitMQ chưa kết nối");
+  console.log("Nhận được email ở địa chỉ:", JSON.stringify(message?.rcptTo));
 
   const buffer = Buffer.from(JSON.stringify(message));
 
@@ -88,7 +88,7 @@ export async function publishEmail(message) {
       if (err) {
         console.error("[RABBITMQ] Publish error:", err);
       }
-    }
+    },
   );
 
   if (!ok) {
@@ -112,7 +112,6 @@ export async function consumeEmails(handler) {
       await handler(data);
 
       channel.ack(msg);
-
     } catch (err) {
       console.error("[WORKER] Lỗi xử lý:", err);
 

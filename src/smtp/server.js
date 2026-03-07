@@ -49,6 +49,7 @@ export async function createSMTPServer() {
 
         return cb();
       } catch (err) {
+        console.log("🚀 ~ createSMTPServer ~ err:", err);
         return cb(err);
       }
     },
@@ -56,13 +57,16 @@ export async function createSMTPServer() {
     // DATA handler
     async onData(stream, session, cb) {
       const messageId = randomUUID();
+      console.log("🚀 ~ createSMTPServer ~ messageId:", messageId);
       const filePath = `${TMP_DIR}/${messageId}.eml`;
+      console.log("🚀 ~ createSMTPServer ~ filePath:", filePath);
 
       try {
         const writeStream = createWriteStream(filePath);
 
         // stream email ra file
         await pipeline(stream, writeStream);
+
 
         // publish metadata vào RabbitMQ
         await publishEmail({
