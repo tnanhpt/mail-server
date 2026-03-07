@@ -43,6 +43,7 @@ router.get("/by-email/:address", async (req, res) => {
   }
 
   const normalized = address.toLowerCase().trim();
+  console.log("🚀 ~ normalized:", normalized)
 
   try {
     let query = {
@@ -57,6 +58,7 @@ router.get("/by-email/:address", async (req, res) => {
       .select("subject received_at from to read expires_at")
       .limit(50)
       .lean();
+    console.log("🚀 ~ emails:", emails)
 
     res.json({
       // query: normalized,

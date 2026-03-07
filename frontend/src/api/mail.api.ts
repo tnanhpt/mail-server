@@ -21,9 +21,9 @@ async function getEmail(email: string): Promise<MailboxResult> {
   return res.data;
 }
 
-async function getEmailContent(id: string): Promise<Mail[]> {
+async function getEmailContent(id: string): Promise<Mail> {
   const res = await API.get(`/mails/${id}`);
-  return res.data as Mail[];
+  return res.data as Mail;
 }
 
 async function readEmail(id: string): Promise<{ success: boolean }> {

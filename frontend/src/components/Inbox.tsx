@@ -20,17 +20,11 @@ type InboxProps = {
 };
 
 const Inbox: React.FC<InboxProps> = React.memo(
-  ({
-    messages,
-    onUpdateMessage,
-    setSelected,
-    selected,
-    deleteEmail,
-    loadingDeleteEmail,
-  }) => {
+  ({ messages, setSelected, selected, deleteEmail, loadingDeleteEmail }) => {
     const [remaining, setRemaining] = useState<{ h: number; m: number } | null>(
-      null
+      null,
     );
+    const [loadingGetMailContent, setLoadingGetMailContent] = useState(false);
 
     useEffect(() => {
       if (!selected?.expires_at) {
@@ -86,22 +80,29 @@ const Inbox: React.FC<InboxProps> = React.memo(
       } ${m} minute${m === 1 ? "" : "s"}.`;
     };
 
-    const ReadEmail = async (id: string) => {
+    const fetchEmailContent = async (id: string) => {
       try {
-        const res = await MailAPI.readEmail(id);
-        if (res.success) {
-          onUpdateMessage(id);
+        setLoadingGetMailContent(true);
+        const data = await MailAPI.getEmailContent(id);
+        setSelected(data);
+      } catch (err: unknown) {
+        setSelected(null);
+        if (err instanceof Error) {
+          alert(err.message);
+        } else {
+          alert("An unknown error occurred.");
         }
-      } catch (error) {
-        if (error instanceof Error) {
-          alert(error.message);
-        }
+      } finally {
+        setLoadingGetMailContent(false);
       }
     };
 
     const selectEmail = async (message: Mail) => {
-      setSelected(message);
-      await ReadEmail(message?._id);
+      var oldMsgId = selected?._id;
+      if (oldMsgId !== message._id) {
+        setSelected(message);
+        await fetchEmailContent(message?._id);
+      }
     };
 
     const html = useMemo(() => {
@@ -181,7 +182,7 @@ const Inbox: React.FC<InboxProps> = React.memo(
                     </button>
                     <p className="text-sm mt-2 text-gray-400 text-right">
                       {dayjs(selected?.received_at).format(
-                        "DD/MM/YYYY HH:mm:ss"
+                        "DD/MM/YYYY HH:mm:ss",
                       )}
                     </p>
                   </div>
@@ -221,7 +222,7 @@ const Inbox: React.FC<InboxProps> = React.memo(
         </div>
       </main>
     );
-  }
+  },
 );
 
 export default Inbox;

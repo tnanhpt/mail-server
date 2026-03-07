@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { BlocksShuffle3Icon } from "@/components/ui/icons/svg-spinners-blocks-shuffle-3";
 import CopyButton from "@/components/CopyBtn";
+import { sleep } from "@/helpers/func";
 
 const DOMAINS = ["getfmail.com", "okmail.live", "jetmail.live"];
 
@@ -14,6 +15,15 @@ const EmailForm: React.FC<{
 }> = ({ onGetEmail, loading }) => {
   const [username, setUsername] = useState<string>("");
   const [domain, setDomain] = useState<string>(DOMAINS[0]);
+
+  useEffect(() => {
+    window.addEventListener("paste", handlePaste);
+
+    return () => {
+      window.removeEventListener("paste", handlePaste);
+    };
+  }, []);
+
   useEffect(() => {
     const load = () => {
       const usernameSaved = localStorage.getItem(KEY_LOCAL_USERNAME);
@@ -31,6 +41,24 @@ const EmailForm: React.FC<{
     load();
     return () => {};
   }, [setUsername]);
+
+  const handlePaste = async (event) => {
+    const pasteData = event.clipboardData.getData("text");
+    const regex =
+      /[A-Za-z0-9._%+-]+@(jetmail\.live|getfmail\.com|okmail\.live)/g;
+
+    if (regex.test(pasteData)) {
+      event.preventDefault();
+      const emails = pasteData.match(regex);
+
+      if (emails && emails.length > 0) {
+        const email = emails[0];
+        const splited = email.split("@");
+        setUsername(splited[0]);
+        setDomain(splited[1]);
+      }
+    }
+  };
 
   const handleCreate = () => {
     const unameTrim = username?.trim();
@@ -91,10 +119,10 @@ const EmailForm: React.FC<{
                 className="w-full md:w-auto px-5 py-3 rounded-md bg-purple-600 text-white font-medium hover:bg-purple-700 flex gap-2  items-center"
               >
                 <BlocksShuffle3Icon className={loading ? "block" : "hidden"} />{" "}
-                <span>Read Email</span>
+                <span>Get Email</span>
               </motion.button>
               <CopyButton text={`${username}@${domain}`} />
-{/* 
+              {/* 
               <motion.button
                 onClick={handleCreate}
                 whileHover={{ scale: 1.04 }}

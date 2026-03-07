@@ -1,47 +1,127 @@
-// src/worker/index.js
 import { simpleParser } from "mailparser";
 import fs from "fs/promises";
-import { connectRabbitMQ, connectRabbitMQWithRetry, consumeEmails } from "../smtp/rabbitmq.js";
+import os from "os";
+
+import { consumeEmails, connectRabbitMQWithRetry } from "../smtp/rabbitmq.js";
 import { connectDB, Email } from "../db/mongo.js";
 import { config } from "../config/index.js";
-import { getVietnamTime } from "../smtp/rabbitmq.js";
 
-async function processEmail({ fileId, raw, envelope }) {
-  const emailBuffer = Buffer.from(raw, "base64");
-  const parsed = await simpleParser(emailBuffer);
+const CPU_COUNT = os.cpus().length;
+
+const WORKER_CONCURRENCY = CPU_COUNT * 2;
+const BATCH_SIZE = 50;
+
+let activeWorkers = 0;
+
+const queue = [];
+let batch = [];
+
+async function parseEmail(job) {
+  const { messageId, filePath, envelope } = job;
+
+  const raw = await fs.readFile(filePath);
+
+  const parsed = await simpleParser(raw);
 
   const now = new Date();
+
   const doc = {
-    message_id: parsed.messageId || "",
+    message_id: parsed.messageId || messageId,
     subject: parsed.subject || "",
     from: parsed.from?.text || "",
-    to: (parsed.to?.value || []).map((v) => v.address),
+
+    to: (parsed.to?.value || []).map((v) =>
+      v.address.toLowerCase()
+    ),
+
     original_to: envelope.originalRcptTos || [],
-    cc: (parsed.cc?.value || []).map((v) => v.address.toLowerCase()),
-    // headers: Object.fromEntries(parsed.headerLines?.map((h) => [h.key, h.line]) || []),
+
+    cc: (parsed.cc?.value || []).map((v) =>
+      v.address.toLowerCase()
+    ),
+
     text: parsed.text || null,
+
     html: parsed.html || null,
-    // attachments: (parsed.attachments || []).map((a) => ({
-    //   filename: a.filename,
-    //   contentType: a.contentType,
-    //   size: a.size,
-    // })),
+
     received_at: now,
-    expires_at: new Date(now.getTime() + config.ttlMinutes * 60 * 1000),
-    // file_id: fileId,
+
+    expires_at: new Date(
+      now.getTime() + config.ttlMinutes * 60 * 1000
+    ),
+
     read: false,
-    raw_size: emailBuffer.length,
-    
+
+    raw_size: raw.length,
   };
 
-  await Email.create(doc);
+  await fs.unlink(filePath);
+
+  return doc;
+}
+
+async function flushBatch() {
+  if (batch.length === 0) return;
+
+  const docs = batch;
+  batch = [];
+
+  try {
+    await Email.insertMany(docs, { ordered: false });
+  } catch (err) {
+    console.error("[WORKER] Mongo batch insert error:", err);
+  }
+}
+
+async function workerLoop() {
+  while (true) {
+    const job = queue.shift();
+
+    if (!job) {
+      await new Promise((r) => setTimeout(r, 10));
+      continue;
+    }
+
+    try {
+      const doc = await parseEmail(job);
+
+      batch.push(doc);
+
+      if (batch.length >= BATCH_SIZE) {
+        await flushBatch();
+      }
+    } catch (err) {
+      console.error("[WORKER] Parse error:", err);
+    }
+  }
+}
+
+async function enqueue(job) {
+  queue.push(job);
+}
+
+async function startWorkers() {
+  console.log(
+    `[WORKER] Starting ${WORKER_CONCURRENCY} workers`
+  );
+
+  for (let i = 0; i < WORKER_CONCURRENCY; i++) {
+    workerLoop();
+  }
+
+  setInterval(flushBatch, 2000);
 }
 
 async function start() {
+  console.log("[WORKER] Starting...");
   await connectDB();
   await connectRabbitMQWithRetry();
-  await consumeEmails(processEmail);
+  await startWorkers();
+  await consumeEmails(async (job) => {
+    await enqueue(job);
+  });
 
+  console.log("[WORKER] Ready");
 }
 
 start().catch(console.error);

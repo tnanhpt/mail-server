@@ -26,7 +26,6 @@ const Home: React.FC = () => {
     try {
       isFetchingRef.current = true;
       if (isSetLoading) setLoadingGetMail(true);
-      await sleep(500);
       const data = await MailAPI.getEmail(email);
       setListMessage(data.emails);
     } catch (err: unknown) {
@@ -93,9 +92,10 @@ const Home: React.FC = () => {
           };
         }
         return item;
-      })
+      }),
     );
   };
+
 
   const deleteEmail = async (id: string) => {
     try {

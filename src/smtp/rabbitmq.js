@@ -1,12 +1,11 @@
 import amqplib from "amqplib";
 import { config } from "../config/index.js";
 
+let connection;
 let channel;
+
 const QUEUE = "email.incoming";
 
-/**
- * Lấy thời gian hiện tại theo múi giờ Việt Nam (UTC+7)
- */
 export function getVietnamTime() {
   return new Date().toLocaleString("vi-VN", {
     timeZone: "Asia/Ho_Chi_Minh",
@@ -24,32 +23,38 @@ export async function connectRabbitMQ() {
   console.log(`[RABBITMQ] Đang kết nối tới RabbitMQ...`);
 
   try {
-    const conn = await amqplib.connect(config.rabbitmq.url, {
+    connection = await amqplib.connect(config.rabbitmq.url, {
       heartbeat: 60,
       timeout: 10000,
     });
 
-    channel = await conn.createChannel();
-    await channel.assertQueue(QUEUE, { durable: true });
+    channel = await connection.createConfirmChannel();
+
+    await channel.assertQueue(QUEUE, {
+      durable: true,
+    });
 
     console.log(`\n[RABBITMQ] Kết nối thành công!`);
     console.log(`   • Queue: ${QUEUE}`);
     console.log(`   • Thời gian: ${getVietnamTime()}\n`);
 
-    // START LISTEN EVENTS (không retry ở đây)
-    conn.on("error", (err) => {
+    connection.on("error", (err) => {
       console.error(`[RABBITMQ] Lỗi kết nối: ${err.message}`);
     });
 
-    conn.on("close", () => {
-      console.warn(`[RABBITMQ] Kết nối bị đóng.`);
+    connection.on("close", async () => {
+      console.warn("[RABBITMQ] Kết nối bị đóng → reconnect...");
+      channel = null;
+      connection = null;
+
+      setTimeout(connectRabbitMQWithRetry, 5000);
     });
 
-    return true; // success
+    return true;
 
   } catch (err) {
     console.error(`[RABBITMQ] Kết nối thất bại: ${err.message}`);
-    return false; // fail
+    return false;
   }
 }
 
@@ -60,7 +65,7 @@ export async function connectRabbitMQWithRetry() {
     isConnected = await connectRabbitMQ();
 
     if (!isConnected) {
-      console.log(`   • Thử lại sau 5 giây...\n`);
+      console.log("   • Thử lại sau 5 giây...\n");
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
   }
@@ -71,23 +76,46 @@ export async function connectRabbitMQWithRetry() {
 export async function publishEmail(message) {
   if (!channel) throw new Error("RabbitMQ chưa kết nối");
 
-  channel.sendToQueue(QUEUE, Buffer.from(JSON.stringify(message)), {
-    persistent: true,
-  });
+  const buffer = Buffer.from(JSON.stringify(message));
+
+  const ok = channel.sendToQueue(
+    QUEUE,
+    buffer,
+    {
+      persistent: true,
+    },
+    (err) => {
+      if (err) {
+        console.error("[RABBITMQ] Publish error:", err);
+      }
+    }
+  );
+
+  if (!ok) {
+    await new Promise((resolve) => channel.once("drain", resolve));
+  }
 }
 
 export async function consumeEmails(handler) {
   if (!channel) throw new Error("RabbitMQ chưa kết nối");
-  channel.prefetch(10);
+
+  channel.prefetch(50);
+
   console.log(`[RABBITMQ] Worker bắt đầu lắng nghe queue: ${QUEUE}`);
+
   await channel.consume(QUEUE, async (msg) => {
     if (!msg) return;
+
     try {
       const data = JSON.parse(msg.content.toString());
+
       await handler(data);
+
       channel.ack(msg);
+
     } catch (err) {
       console.error("[WORKER] Lỗi xử lý:", err);
+
       channel.nack(msg, false, false);
     }
   });
