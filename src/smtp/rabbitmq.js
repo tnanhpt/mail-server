@@ -104,7 +104,6 @@ export async function consumeEmails(handler) {
   console.log(`[RABBITMQ] Worker bắt đầu lắng nghe queue: ${QUEUE}`);
 
   await channel.consume(QUEUE, async (msg) => {
-    console.log("🚀 ~ consumeEmails ~ msg:", msg)
     if (!msg) return;
 
     try {

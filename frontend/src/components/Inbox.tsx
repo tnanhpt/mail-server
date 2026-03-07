@@ -15,12 +15,20 @@ type InboxProps = {
   selected: Mail | null;
   onUpdateMessage: (id: string) => void;
   setSelected: (message: Mail | null) => void;
+  setListMessage: (message: Mail[]) => void;
   deleteEmail: (id: string) => void;
   loadingDeleteEmail: boolean;
 };
 
 const Inbox: React.FC<InboxProps> = React.memo(
-  ({ messages, setSelected, selected, deleteEmail, loadingDeleteEmail }) => {
+  ({
+    messages,
+    setSelected,
+    selected,
+    deleteEmail,
+    loadingDeleteEmail,
+    setListMessage,
+  }) => {
     const [remaining, setRemaining] = useState<{ h: number; m: number } | null>(
       null,
     );
@@ -100,6 +108,15 @@ const Inbox: React.FC<InboxProps> = React.memo(
     const selectEmail = async (message: Mail) => {
       const oldMsgId = selected?._id;
       if (oldMsgId !== message._id) {
+        const newMess = messages.map((item: Mail) => {
+          if (item._id !== message._id) return item;
+          return {
+            ...item,
+            read: true,
+          };
+        });
+
+        setListMessage(newMess);
         setSelected(message);
         await fetchEmailContent(message?._id);
       }

@@ -125,6 +125,7 @@ const Home: React.FC = () => {
       <Inbox
         onUpdateMessage={onUpdateMessage}
         messages={listMessage}
+        setListMessage={setListMessage}
         selected={selected}
         deleteEmail={deleteEmail}
         loadingDeleteEmail={loadingDelete}
