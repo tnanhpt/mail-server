@@ -118,7 +118,6 @@ async function start() {
   await connectRabbitMQWithRetry();
   await startWorkers();
   await consumeEmails(async (job) => {
-    console.log("🚀 ~ start ~ job:", job)
     await enqueue(job);
   });
 
