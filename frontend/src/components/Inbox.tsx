@@ -181,6 +181,7 @@ const Inbox: React.FC<InboxProps> = React.memo(
                     <h1 className="text-xl font-semibold">
                       {selected?.subject}
                     </h1>
+                    <p className="text-sm">{selected.from}</p>
                     <p className="text-sm text-yellow-600 bg-yellow-50 py-1 rounded w-max px-2 mt-2 md:mt-0">
                       {remainingText(remaining)}
                     </p>
@@ -197,6 +198,7 @@ const Inbox: React.FC<InboxProps> = React.memo(
                       )}
                       Delete
                     </button>
+
                     <p className="text-sm mt-2 text-gray-400 text-right">
                       {dayjs(selected?.received_at).format(
                         "DD/MM/YYYY HH:mm:ss",
