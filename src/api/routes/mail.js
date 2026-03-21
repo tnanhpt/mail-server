@@ -55,7 +55,7 @@ router.get("/by-email/:address", async (req, res) => {
     const emails = await Email.find(query)
       .sort({ received_at: -1 })
       .select("subject received_at from to read expires_at")
-      .limit(50)
+      .limit(200)
       .lean();
 
     res.json({

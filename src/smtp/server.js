@@ -22,7 +22,7 @@ export async function createSMTPServer() {
 
     size: 1 * 1024 * 1024, // max 1MB email
 
-    maxClients: 500,
+    maxClients: 1000,
 
     socketTimeout: 60000,
 
